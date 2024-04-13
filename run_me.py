@@ -30,7 +30,7 @@ def main():
     save_data(scores)
 
     end_time = time.time()
-    print(f'Time taken: {end_time - start_time} seconds')
+    print(f'Time taken: {round(end_time - start_time, 3)} seconds')
 
 
 if __name__ == '__main__':

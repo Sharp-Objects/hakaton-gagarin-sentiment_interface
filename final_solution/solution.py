@@ -2,12 +2,19 @@ import pickle
 import typing as tp
 from pathlib import Path
 
-import pandas as pd
-
-from final_solution.preparation_issuer import get_issuerid
-
 EntityScoreType = tp.Tuple[int, float]  # (entity_id, entity_score)
 MessageResultType = tp.List[EntityScoreType]
+
+
+def get_issuerid(string: str, data_dict: dict) -> int:
+    """
+    Ищет соответствие 'titles' в данной строке и возвращает соответствующий 'issuerid'
+
+    :param string: Строка, в которой ищем соответствие
+    :param data_dict: Подготовленный словарь данных с 'titles' и 'issuerid'
+    :return: 'issuerid', если найдено соответствие, в противном случае `-1`
+    """
+    return next((record['issuerid'] for record in data_dict if any(title in string for title in record['titles'])), -1)
 
 
 def score_texts(
@@ -35,24 +42,18 @@ def score_texts(
 
     issuer_path: Path = Path(Path.cwd(), "data", "issuer.pickle")
     with open(issuer_path.absolute(), 'rb') as f:
-        loaded_data_dict = pickle.load(f)
+        issuer_pickle = pickle.load(f)
 
-    # TODO: fix me
-    VALUE = 3.0
+    VALUE = 3.0  # TODO: fix me
 
-    scores = []
+    scores: list = []
 
-    example_path: Path = Path(Path.cwd(), "data", "example.xlsx")
-    df = pd.read_excel(example_path.absolute())
-
-    messages = df['MessageText'].tolist()
-
-    # for message in messages:
-    #     print(message)
+    print(issuer_pickle[108])
 
     for message in messages:
         message = message.lower()
-        result = get_issuerid(message, loaded_data_dict)
+        result = get_issuerid(message, issuer_pickle)
+        print(f"DEBUG | {message}")
         scores.append([(result, VALUE)])
 
     return scores

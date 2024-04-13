@@ -57,20 +57,9 @@ def prep_data(df: pd.DataFrame) -> list:
     return data
 
 
-def get_issuerid(string: str, data_dict: dict) -> int:
-    """
-    Ищет соответствие 'titles' в данной строке и возвращает соответствующий 'issuerid'
-
-    :param string: Строка, в которой ищем соответствие
-    :param data_dict: Подготовленный словарь данных с 'titles' и 'issuerid'
-    :return: 'issuerid', если найдено соответствие, в противном случае `-1`
-    """
-    return next((record['issuerid'] for record in data_dict if any(title in string for title in record['titles'])), -1)
-
-
 if __name__ == "__main__":
-    path: Path = Path(Path.cwd().parent, "data", "ready_issuer.xlsx")
-    df = read_data(path.absolute())
+    df_path: Path = Path(Path.cwd().parent, "data", "ready_issuer.xlsx")
+    df = read_data(df_path.absolute())
     df = extend_data(df)
     df = process_titles(df)
     data_dict = prep_data(df)
@@ -78,8 +67,3 @@ if __name__ == "__main__":
     issuer_pickle_path: Path = Path(Path.cwd().parent, "data", "issuer.pickle")
     with open(issuer_pickle_path.absolute(), 'wb') as f:
         pickle.dump(data_dict, f)
-
-    ### Example ###
-    # test_string = "Роснефть увеличила добычу на 3% в 2022 году".lower()
-    # result = get_issuerid(test_string, data_dict)
-    # print(result)
