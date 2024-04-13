@@ -51,7 +51,7 @@ def score_texts(
     with open(issuer_path.absolute(), 'rb') as f:
         issuer_pickle = pickle.load(f)
 
-    VALUE = 3.0  # TODO: fix me
+    value = 4.0  # TODO: fix me
 
     scores: list = []
 

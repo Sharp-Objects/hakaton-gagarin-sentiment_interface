@@ -1,72 +1,82 @@
 import re
-import time
+from pathlib import Path
+from typing import Dict, Set
 
 import pandas as pd
 
-start_time = time.time()
+data_path: Path = Path(Path.cwd().parent, 'data', 'test_data.xlsx')
+df_messages = pd.read_excel(data_path.absolute())
+issuers_path: Path = Path(Path.cwd().parent, 'data', 'issuers.xlsx')
+df_tickers = pd.read_excel(issuers_path.absolute())
 
-df_messages = pd.read_excel('test_data.xlsx')
-df_tickers = pd.read_excel('issuers.xlsx')
+# Creating a dictionary to store issuerid for each message row
+unique_issuer_ids: Dict[int, Set[int]] = {i: set() for i in df_messages.index}
 
-# Создаем словарь для хранения issuerid для каждой строки сообщения
-unique_issuer_ids = {}
+# Converting all messages to lower case for efficient comparison
+df_messages['MessageText'] = df_messages['MessageText'].str.lower()
 
-# Проход по каждой строке в файле сообщений
-for index, row_message in df_messages.iterrows():
-    message = row_message['MessageText'].lower()  # Приведение сообщения к нижнему регистру
-    unique_issuer_ids[index] = set()
+# Converting to string and lower case for efficient comparison
+df_tickers[
+    [
+        'BGTicker',
+        'EMITENT_FULL_NAME',
+        'Unnamed: 5',
+        'Unnamed: 6',
+        'Unnamed: 7',
+        'Unnamed: 8'
+    ]
+] = df_tickers[
+    [
+        'BGTicker',
+        'EMITENT_FULL_NAME',
+        'Unnamed: 5',
+        'Unnamed: 6',
+        'Unnamed: 7',
+        'Unnamed: 8'
+    ]
+].apply(lambda x: x.astype(str).str.lower())
 
-    # Проход по каждому тикеру и названию компании в файле с данными
-    for index_data, row_data in df_tickers.iterrows():
-        ticker = str(row_data['BGTicker'])  # Приведение тикера к нижнему регистру
-        company = str(row_data['EMITENT_FULL_NAME'])  # Приведение названия компании к нижнему регистру
-        issuerid = row_data['issuerid']
+common_messages = [' ', ',', '.', '"']
 
-        # Проверка наличия пустых значений в дополнительных столбцах
+# Unpacking the dataframe to series for more efficient computation
+issuer_ids = df_tickers['issuerid']
+tickers = df_tickers['BGTicker']
+companies = df_tickers['EMITENT_FULL_NAME']
+unnamed_cols = [df_tickers[f'Unnamed: {i}'] for i in range(5, 9)]
 
-        # Поиск названия компании в сообщении
-        common_messages = [' ', ',', '.', '"']
-        if any((company + symbol) in message for symbol in common_messages):
-            if company != 'газпром':
-                unique_issuer_ids[index].add(issuerid)
-            else:
-                if 'газпром нефть' not in message:
-                    unique_issuer_ids[index].add(issuerid)
-                else:
-                    if message.index('газпром нефть') > message.index('газпром'):
-                        unique_issuer_ids[index].add(issuerid)
-                    else:
-                        unique_issuer_ids[index].add(issuerid)
-                        unique_issuer_ids[index].discard(48)
-        col5 = str(row_data['Unnamed: 5']).lower()
-        if any((col5 + symbol) in message for symbol in common_messages):
-            unique_issuer_ids[index].add(issuerid)
-
-        col6 = str(row_data['Unnamed: 6']).lower()
-        if any((col6 + symbol) in message for symbol in common_messages):
-            unique_issuer_ids[index].add(issuerid)
-
-        col7 = str(row_data['Unnamed: 7']).lower()
-        if any((col7 + symbol) in message for symbol in common_messages):
-            unique_issuer_ids[index].add(issuerid)
-
-        col8 = str(row_data['Unnamed: 8']).lower()
-        if any((col8 + symbol) in message for symbol in common_messages):
-            unique_issuer_ids[index].add(issuerid)
-
+for message_index, message in df_messages['MessageText'].items():
+    assert isinstance(message_index, int)
+    for ticker, company, issuerid, *unnamed_cols_values in (
+            zip(tickers, companies, issuer_ids, *unnamed_cols)
+    ):
+        if any(
+                (company + symbol) in message for symbol in common_messages
+        ) and company != 'газпром':
+            if (
+                    'газпром нефть' in message
+                    and message.index('газпром нефть')
+                    > message.index('газпром')
+            ):
+                unique_issuer_ids[message_index].add(issuerid)
+            unique_issuer_ids[message_index].add(issuerid)
+        if 'газпром' in company:
+            unique_issuer_ids[message_index].discard(48)
+        if (
+                any((col + symbol) in message
+                    for symbol in common_messages
+                    for col in unnamed_cols_values)
+        ):
+            unique_issuer_ids[message_index].add(issuerid)
         if re.search(r'\b{}\b'.format(re.escape(ticker)), message):
-            unique_issuer_ids[index].add(issuerid)
-            if ticker == 'moex' and 'imoex' in message:
-                unique_issuer_ids[index].discard(103)
+            unique_issuer_ids[message_index].add(issuerid)
+        if ticker == 'moex' and 'imoex' in message:
+            unique_issuer_ids[message_index].discard(103)
 
-# Вывод уникальных issuerid для каждой строки сообщения
-for index in unique_issuer_ids:
-    issuer_ids = unique_issuer_ids[index]
+result = []
+
+for index, issuer_ids in unique_issuer_ids.items():  # type: ignore
     if issuer_ids:
         message = df_messages.loc[index, 'MessageText']
-        issuer_ids_str = [str(id) for id in issuer_ids]  # конвертация в строковый формат
-        print(f"Issuer IDs {', '.join(issuer_ids_str)} для сообщения '{message}'")
+        result.append([list(issuer_ids), message])
 
-end_time = time.time()
-execution_time = end_time - start_time
-print(f"Time taken to execute: {execution_time} seconds")
+print(result[3])
