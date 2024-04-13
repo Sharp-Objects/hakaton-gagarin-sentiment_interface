@@ -3,20 +3,22 @@ from typing import List
 
 def accuracy_score(y_true: List[int], y_pred: List[int]) -> float:
     """
-    @param y_true: list[int] - Список с истинными значениями классификации.
-    @param y_pred: list[int] - Список с предсказанными значениями классификации.
-    @return: float - Значение точности прогноза.
+    @param y_true: Список с истинными значениями классификации.
+    @param y_pred: Список с предсказанными значениями классификации.
+    @return: Значение точности прогноза.
     """
     correct: int = sum(y_t == y_p for y_t, y_p in zip(y_true, y_pred))
     return correct / len(y_true) if y_true else 0
 
 
-def macro_f1_score(y_true: List[int], y_pred: List[int], n_classes: int) -> float:
+def macro_f1_score(
+        y_true: List[int], y_pred: List[int], n_classes: int
+) -> float:
     """
-    @param y_true: list[int] - Список с истинными значениями классификации.
-    @param y_pred: list[int] - Список с предсказанными значениями классификации.
-    @param n_classes: int - Количество классов.
-    @return: float - Значение макросредней F-меры.
+    @param y_true: Список с истинными значениями классификации.
+    @param y_pred: Список с предсказанными значениями классификации.
+    @param n_classes: Количество классов.
+    @return: Значение макросредней F-меры.
     """
     tp: list[int] = [0] * n_classes
     fp: list[int] = [0] * n_classes
@@ -45,10 +47,10 @@ def macro_f1_score(y_true: List[int], y_pred: List[int], n_classes: int) -> floa
 
 def team_score(y_true: List[int], y_pred: List[int], n_classes: int) -> float:
     """
-    @param y_true: list[int] - Список с истинными значениями классификации.
-    @param y_pred: list[int] - Список с предсказанными значениями классификации.
-    @param n_classes: int - Количество классов.
-    @return: float - Значение общего показателя (Team Score).
+    @param y_true: Список с истинными значениями классификации.
+    @param y_pred: Список с предсказанными значениями классификации.
+    @param n_classes: Количество классов.
+    @return: Значение общего показателя (Team Score).
     """
     accuracy: float = accuracy_score(y_true, y_pred)
     f1_score: float = macro_f1_score(y_true, y_pred, n_classes)
