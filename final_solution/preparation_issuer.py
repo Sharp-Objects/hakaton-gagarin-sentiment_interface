@@ -6,7 +6,8 @@ import pandas as pd
 
 def read_data(file_path: Path) -> pd.DataFrame:
     """
-    Читает excel-файл, заполняет значения NaN пустыми строками и создает новую колонку 'titles'.
+    Читает excel-файл, заполняет значения NaN пустыми строками
+    и создает новую колонку 'titles'.
 
     :param file_path: Путь к excel-файлу.
     :return: DataFrame после выполнения операций.
@@ -27,7 +28,11 @@ def extend_data(df: pd.DataFrame) -> pd.DataFrame:
     :param df: DataFrame полученный из функции read_data.
     :return: DataFrame после расширения 'titles'.
     """
-    df['titles'] = df.apply(lambda row: row['titles'] + [row['EMITENT_FULL_NAME'], row['BGTicker']], axis=1)
+    df['titles'] = df.apply(
+        lambda row: row['titles'] + [row['EMITENT_FULL_NAME'],
+                                     row['BGTicker']],
+        axis=1
+    )
 
     return df
 
@@ -39,20 +44,24 @@ def process_titles(df: pd.DataFrame) -> pd.DataFrame:
     :param df: DataFrame полученный из функции extend_data.
     :return: DataFrame с обработанными 'titles'.
     """
-    df['titles'] = df['titles'].apply(lambda x: list(filter(None, set(item.lower() for item in x))))
+    df['titles'] = df['titles'].apply(
+        lambda x: list(filter(None, set(item.lower() for item in x)))
+    )
 
     return df
 
 
 def prep_data(df: pd.DataFrame) -> list:
     """
-    Подготавливает итоговый список данных в виде словарей с ключами 'issuerid', 'EMITENT_FULL_NAME',
-    'BGTicker' и 'titles'.
+    Подготавливает итоговый список данных с ключами
+    'issuerid', 'EMITENT_FULL_NAME', 'BGTicker' и 'titles'.
 
     :param df: DataFrame полученный из функции process_titles.
     :return: Список всех записей.
     """
-    data = df[['issuerid', 'EMITENT_FULL_NAME', 'BGTicker', 'titles']].to_dict('records')
+    data = df[
+        ['issuerid', 'EMITENT_FULL_NAME', 'BGTicker', 'titles']
+    ].to_dict('records')
 
     return data
 

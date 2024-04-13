@@ -1,7 +1,11 @@
 import pytest
 from sklearn.metrics import f1_score, accuracy_score
 
-from final_solution.score import macro_f1_score, team_score, accuracy_score as your_accuracy_score
+from final_solution.score import (
+    macro_f1_score,
+    team_score,
+    accuracy_score as your_accuracy_score
+)
 
 
 def test_accuracy_score():
@@ -29,7 +33,9 @@ def test_team_score():
     y_pred = [1, 1, 1, 0, 0]
 
     your_team_score = team_score(y_true, y_pred, 2)
-    sklearn_score = 100 * ((0.5 * f1_score(y_true, y_pred, average='macro')) + (0.5 * accuracy_score(y_true, y_pred)))
+    f1_temp = 0.5 * f1_score(y_true, y_pred, average='macro')
+    accuracy_temp = 0.5 * accuracy_score(y_true, y_pred)
+    sklearn_score = 100 * (f1_temp + accuracy_temp)
 
     assert round(your_team_score, 3) == round(sklearn_score, 3)
 
