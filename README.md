@@ -1,6 +1,8 @@
 ## Status badge
 
+[![We recommend PyCharm](https://www.elegantobjects.org/intellij-idea.svg)](https://www.jetbrains.com/pycharm/)
 [![Python CI](https://github.com/Sharp-Objects/hakaton-gagarin-sentiment_interface/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/Sharp-Objects/hakaton-gagarin-sentiment_interface/actions/workflows/main.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # Требования к интерфейсу
 
